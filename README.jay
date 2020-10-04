@@ -1,0 +1,2 @@
+The www folder is the web application that will be distributed
+using the wasm Rust code in the src folder.
