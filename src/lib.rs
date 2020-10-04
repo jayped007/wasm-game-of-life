@@ -95,6 +95,21 @@ impl Universe
 #[wasm_bindgen]
 impl Universe
 {
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn height(&self) -> u32 {
+        self.height
+    }
+
+    // return pointer to 1D array of byte Cell values to JS
+    //  NOTE: *const Cell syntax
+    //     => pointer to non-mutable array???
+    pub fn cells(&self) -> *const Cell {
+        self.cells.as_ptr()
+    }
+    
     pub fn tick(&mut self)
     {
         let mut next = self.cells.clone(); // copy of current cells, modify ==> next state
