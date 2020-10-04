@@ -4,6 +4,18 @@ version = "0.1.0"
 authors = ["jay <jayped007@gmail.com>"]
 edition = "2018"
 
+# wasm-pack profiles: [package.metadata.wasm-pack.profile.<profile-name>]
+# There are three profiles: dev (for --dev), profiling, and release (for --release).
+
+[package.metadata.wasm-pack.profile.dev]
+wasm-opt = false
+
+[package.metadata.wasm-pack.profile.profiling]
+wasm-opt = false
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
