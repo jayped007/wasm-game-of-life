@@ -2,6 +2,8 @@ mod utils;
 
 use quad_rand;
 
+use js_sys;
+
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -130,6 +132,12 @@ impl Universe
     // Constructor, initialize the universe to hard-coded pattern
     pub fn new() -> Universe
     {
+        let now = js_sys::Date::now();
+        let now_date = js_sys::Date::new(&JsValue::from_f64(now));
+
+        let ms_u64: u64 = now_date.get_milliseconds() as u64;
+        quad_rand::srand(ms_u64); // u64
+
         let width = 64;
         let height = 64;
 
@@ -183,19 +191,19 @@ impl Universe
 //       self.to_string()
 //     }
 
-use std::fmt;
+// use std::fmt;
 
-impl fmt::Display for Universe
-{
+// impl fmt::Display for Universe
+// {
 
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for line in self.cells.as_slice().chunks(self.width as usize) {
-            for &cell in line {
-                write!(f, "{}", (if cell == Cell::Dead { '◻' } else { '◼' }))?;
-            }
-            write!(f, "\n")?;
-        }
-        Ok(())
-    }
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         for line in self.cells.as_slice().chunks(self.width as usize) {
+//             for &cell in line {
+//                 write!(f, "{}", (if cell == Cell::Dead { '◻' } else { '◼' }))?;
+//             }
+//             write!(f, "\n")?;
+//         }
+//         Ok(())
+//     }
 
-}
+// }
