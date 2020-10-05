@@ -14,6 +14,24 @@ use wasm_bindgen::prelude::*;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+#[wasm_bindgen]
+pub fn init_panic_hook() {
+    console_error_panic_hook::set_once();
+}
+
+use web_sys;
+
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+//  allows use of log! macro ==> e.g.
+//    log!("cell[{}, {}] is initially {:?} and has {} neighbors",
+//         row, col, cell, neighbors);
+//    log!("    it becomes {:?}", next_cell);
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 // Define a cell for the 'Universe', each 1 byte
 //   use repr(u8) to ensure 1 byte unsigned values
 //
@@ -150,6 +168,8 @@ impl Universe
     // Constructor, initialize the universe to hard-coded pattern
     pub fn new() -> Universe
     {
+        utils::set_panic_hook(); // panic will show up in JS console, vs 'unreachable' message
+
         let now = js_sys::Date::now();
         let now_date = js_sys::Date::new(&JsValue::from_f64(now));
 

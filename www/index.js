@@ -81,6 +81,7 @@ const drawCells = () => {
 
 // iteration callback -- requestAnimationFrame every tick and update Universe
 const renderLoop = () => {
+  //debugger; // starts browser debugger, JS keyword, ECMAscript 1
   universe.tick(); // update Universe
 
   drawGrid();
