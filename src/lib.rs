@@ -1,5 +1,7 @@
 mod utils;
 
+use quad_rand;
+
 use wasm_bindgen::prelude::*;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
@@ -21,6 +23,14 @@ pub enum Cell {
     Alive = 1
 }
 
+#[wasm_bindgen]
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum InitialPattern {
+    Complex1 = 0,
+    Random5050 = 1
+}
+
 // Define the 'Universe', a 1D array of Cell values (byte values, 0 or 1 per Cell def)
 //   Give the width of the universe, each row of the universe is the next set
 //   of 'width' cells, starting with the first row from indexes 0:<width>
@@ -29,29 +39,6 @@ pub struct Universe {
     width:  u32,  // width of each row
     height: u32,  // number of rows
     cells:  Vec<Cell>  // width*height cells, each one byte
-}
-
-// implement Display trait for Universe
-//   used by to_string() method used later in render() method
-//   Algo:
-//     Write 'height' lines, each line representing the next row in Universe
-//     for each column in a row show closed square box if live else an open square box.
-
-use std::fmt;
-
-impl fmt::Display for Universe
-{
-
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for line in self.cells.as_slice().chunks(self.width as usize) {
-            for &cell in line {
-                write!(f, "{}", (if cell == Cell::Dead { '◻' } else { '◼' }))?;
-            }
-            write!(f, "\n")?;
-        }
-        Ok(())
-    }
-
 }
 
 // methods for Universe, but not exposed to JS
@@ -146,15 +133,32 @@ impl Universe
         let width = 64;
         let height = 64;
 
+        // Randomly decide whether to use Complex1 or Random5050
+        let _pattern: InitialPattern =
+          if quad_rand::gen_range(0, 2) == 0 {
+            InitialPattern::Complex1
+          } else {
+            InitialPattern::Random5050
+          };
+
         // hardcoded pattern, depends on 8x8 definition
         //   use closure over the 1D array with zero-rel index i
-        let cells = (0..width * height).map(|i|
+        let cells = (0..width * height).map(|_i|
         {
-            if i % 2 == 0 || i % 7 == 0 {
+            //if pattern == InitialPattern::Complex1 {
+            //   if i % 2 == 0 || i % 7 == 0 {
+            //     Cell::Alive
+            //   } else {
+            //     Cell::Dead
+            //   }
+            // } else { // InitialPattern::Random5050
+              if quad_rand::gen_range(0, 20) == 0 {
                 Cell::Alive
-            } else {
+              } else {
                 Cell::Dead
-            }
+              }
+            // }
+
         })
         .collect();
 
@@ -167,11 +171,31 @@ impl Universe
 
     }
 
-    // render() -- what does the string returned look like?
-    //   How is it defined what to_string() will do?
-    //   By the "Display" trait!
-    pub fn render(&self) -> String {
-        self.to_string()
+}
+
+// implement Display trait for Universe
+//   used by to_string() method used later in render() method
+//   Algo:
+//     Write 'height' lines, each line representing the next row in Universe
+//     for each column in a row show closed square box if live else an open square box.
+//   Could add following pub function to Universe
+//     pub fn render(&self) -> String {
+//       self.to_string()
+//     }
+
+use std::fmt;
+
+impl fmt::Display for Universe
+{
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for line in self.cells.as_slice().chunks(self.width as usize) {
+            for &cell in line {
+                write!(f, "{}", (if cell == Cell::Dead { '◻' } else { '◼' }))?;
+            }
+            write!(f, "\n")?;
+        }
+        Ok(())
     }
 
 }

@@ -1,4 +1,4 @@
-import { Universe, Cell } from "wasm-game-of-life";
+import { Universe, Cell, InitialPattern } from "wasm-game-of-life";
 
 // Import the WebAssembly memory
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
@@ -13,15 +13,15 @@ const universe = Universe.new();
 const width = universe.width(); // NOT Universe.width() !!!!
 const height = universe.height();
 
-// Give the canvas room for all cells and 1px border
-const canvas = document.getElementById("game-of-life-canvas");
-canvas.height = (CELL_SIZE + 1) * height + 1;
-canvas.width = (CELL_SIZE + 1) * width + 1;
-
-const ctx = canvas.getContext("2d");
-
 const getRowStartPos = (row) => row * (CELL_SIZE + 1) + 1;
 const getColStartPos = (col) => col * (CELL_SIZE + 1) + 1;
+
+// Give the canvas room for all cells and 1px border
+const canvas = document.getElementById("game-of-life-canvas");
+canvas.height = getRowStartPos(height);
+canvas.width = getColStartPos(width);
+
+const ctx = canvas.getContext("2d");
 
 const drawGrid = () => {
   // NOTE: ctx is external reference to 2d context w/in canvas
