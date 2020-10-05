@@ -1,3 +1,5 @@
+// lib.rs -- RUST wasm interface for Conways game of life
+
 mod utils;
 
 use quad_rand;
@@ -92,6 +94,22 @@ impl Universe
         self.height
     }
 
+    // set_width -- set width of Universe, set all cells to Dead state
+    pub fn set_width(&mut self, width: u32) {
+        self.width = width;
+        self.cells =
+            (0..width * self.height)
+            .map(|_i| Cell::Dead).collect();
+    }
+
+    // Set the height of the Universe, set all cells to Dead state
+    pub fn set_height(&mut self, height: u32) {
+        self.height = height;
+        self.cells =
+            (0..self.width * height)
+            .map(|_i| Cell::Dead).collect();
+    }
+
     // return pointer to 1D array of byte Cell values to JS
     //  NOTE: *const Cell syntax
     //     => pointer to non-mutable array???
@@ -180,6 +198,33 @@ impl Universe
     }
 
 }
+
+// impl Universe block w/o wasm_bindgen attribute
+// Needed for testing -- don't expose to our JS.
+// Rust-generated WebAsm functions cannot return borrowed references.
+// NOTE/SUGGEST: Try compiling the Rust-generated WebAsm with
+//       the wasm_bindgen attribute and examine errors.
+// NOTE: get_cells returns borrowed reference &self.cells
+
+impl Universe {
+    /// Get the dead and alive values of the entire universe.
+    pub fn get_cells(&self) -> &[Cell] {
+        &self.cells
+    }
+
+    /// Set specific cells in a universe to Alive, give slice of (row,col) Tuples.
+    pub fn set_cells(&mut self, cells: &[(u32, u32)]) {
+        for (row, col) in cells.iter().cloned() {
+            let idx = self.get_index(row, col);
+            self.cells[idx] = Cell::Alive;
+            // NOTE: can't use self.cells[ self.get_index(row,col) ] = Cell::Alive
+            //  claims immutable borrow on self.get_index call and
+            //    mutable borrow later used here.  (I don't follow personally.)
+        }
+    }
+
+}
+
 
 // implement Display trait for Universe
 //   used by to_string() method used later in render() method
