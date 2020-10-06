@@ -52,6 +52,11 @@ impl Cell {
             Cell::Alive => Cell::Dead,
         };
     }
+
+    fn set_cell(&mut self, cell_state: Cell) {
+        //log!("set_cell ({:?})", cell_state);
+        *self = cell_state;
+    }
 }
 
 #[wasm_bindgen]
@@ -69,7 +74,8 @@ pub enum InitialPattern {
 pub struct Universe {
     width:  u32,  // width of each row
     height: u32,  // number of rows
-    cells:  Vec<Cell>  // width*height cells, each one byte
+    cells:  Vec<Cell>,  // width*height cells, each one byte
+    mousedown: bool // set when shift-click event, so that associated click ignored
 }
 
 // methods for Universe, but not exposed to JS
@@ -109,7 +115,7 @@ impl Universe
 
 }
 
-fn generate_cells(width: &u32, height: &u32, _pattern: &InitialPattern) -> Vec<Cell> {
+fn generate_cells(width: u32, height: u32, _pattern: InitialPattern) -> Vec<Cell> {
 
     // expression generating Vec<Cell>
     let cells = (0..width * height).map(|_i|
@@ -205,6 +211,21 @@ impl Universe
         self.cells[idx].toggle();
     }
 
+    pub fn set_cell_value(&mut self, row: u32, column: u32, valu: Cell) {
+        let idx = self.get_index(row, column);
+        self.cells[idx].set_cell(valu);
+    }
+
+    // allow JS to determine if mousedown event occurring (shift-click)
+    pub fn is_mousedown(&self) -> bool {
+        return self.mousedown;
+    }
+
+    // allow JS to reset the mousedown value
+    pub fn set_mousedown_value(&mut self, valu: bool) {
+        self.mousedown = valu;
+    }
+
     // Constructor, initialize the universe to hard-coded pattern
     pub fn new() -> Universe
     {
@@ -228,13 +249,15 @@ impl Universe
           };
 
         let pattern = InitialPattern::Random5050;
-        let cells = generate_cells(&width, &height, &pattern);
+        let cells = generate_cells(width, height, pattern);
+        let mousedown = false;
 
         Universe
         {
             width,
             height,
             cells,
+            mousedown
         }
 
     }
@@ -243,7 +266,7 @@ impl Universe
         log!("reset_board() : {:?}", pattern);
         let width = self.width();
         let height = self.height();
-        self.cells = generate_cells(&width, &height, &pattern);
+        self.cells = generate_cells(width, height, pattern);
     }
 
 }

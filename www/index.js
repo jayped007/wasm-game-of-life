@@ -79,10 +79,7 @@ const drawCells = () => {
   ctx.stroke();
 };
 
-// click event for canvas, toggle cell that was clicked on
-canvas.addEventListener("click", (event) => {
-  // obtain coordinates where mouse was clicked
-
+const findRowColOfClick = (event) => {
   const boundingRect = canvas.getBoundingClientRect();
 
   const scaleX = canvas.width / boundingRect.width;
@@ -98,10 +95,50 @@ canvas.addEventListener("click", (event) => {
   const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
   const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
 
-  universe.toggle_cell(row, col);
+  return [row, col];
+};
 
+// Because we want to disable this event some of the time, it cant be anonymous
+const canvas_click_event_listener = (evt) => {
+  if (universe.is_mousedown()) {
+    universe.set_mousedown_value(false); // only ignore once
+    return;
+  }
+  // obtain coordinates where mouse was clicked
+  const [row, col] = findRowColOfClick(evt);
+  console.log("canvas click in (row,col) = (" + row + ", " + col + ")");
+  universe.toggle_cell(row, col);
   drawGrid();
   drawCells();
+};
+
+// click event for canvas, toggle cell that was clicked on
+canvas.addEventListener("click", canvas_click_event_listener);
+
+canvas.addEventListener("mousedown", (evt) => {
+  if (evt.shiftKey) {
+    universe.set_mousedown_value(true); // cause associated click event to be ignored
+    // Shift-click ==> create glider at (row,col)
+    const [row, col] = findRowColOfClick(evt);
+    console.log(
+      "canvas mousedown shift-click in (row,col) = (" + row + ", " + col + ")"
+    );
+    pauseAction(); // no ticks until glider inserted
+    playPauseButton.textContent = "▶";
+    // create glider starting at (row,col)
+    universe.set_cell_value(row, col, Cell.Alive); // first row of 3
+    universe.set_cell_value(row, col + 1, Cell.Dead);
+    universe.set_cell_value(row, col + 2, Cell.Alive);
+    universe.set_cell_value(row + 1, col, Cell.Dead); // second row of 3
+    universe.set_cell_value(row + 1, col + 1, Cell.Alive);
+    universe.set_cell_value(row + 1, col + 2, Cell.Alive);
+    universe.set_cell_value(row + 2, col, Cell.Dead); // third row of 3
+    universe.set_cell_value(row + 2, col + 1, Cell.Alive);
+    universe.set_cell_value(row + 2, col + 2, Cell.Dead);
+    drawGrid();
+    drawCells();
+    restartAction();
+  }
 });
 
 // iteration callback -- requestAnimationFrame every tick and update Universe
