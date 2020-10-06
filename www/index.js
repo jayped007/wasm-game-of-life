@@ -79,7 +79,34 @@ const drawCells = () => {
   ctx.stroke();
 };
 
+// click event for canvas, toggle cell that was clicked on
+canvas.addEventListener("click", (event) => {
+  // obtain coordinates where mouse was clicked
+
+  const boundingRect = canvas.getBoundingClientRect();
+
+  const scaleX = canvas.width / boundingRect.width;
+  const scaleY = canvas.height / boundingRect.height;
+
+  const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+  const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+  // convert coords to row, col then toggle cell then redraw grid
+  // NOTE: cells are CELL_SIZE+1 pixels wide and high (including border)
+  // NOTE: coordinates we have (canvasLeft,Top) are pixel counts relative to upper LH corner
+
+  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
+  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+
+  universe.toggle_cell(row, col);
+
+  drawGrid();
+  drawCells();
+});
+
 // iteration callback -- requestAnimationFrame every tick and update Universe
+let animationId = null;
+
 const renderLoop = () => {
   //debugger; // starts browser debugger, JS keyword, ECMAscript 1
   universe.tick(); // update Universe
@@ -87,12 +114,64 @@ const renderLoop = () => {
   drawGrid();
   drawCells();
 
-  requestAnimationFrame(renderLoop); // infinite loop
+  animationId = requestAnimationFrame(renderLoop); // infinite loop
+  // NOTE: animationId allows for stopping the iteration
 
   // Do frames pile up? No.  This frame doesn't wait for next iteration of renderloop.  It requested it and its done.
 };
 
+// isPaused() => Determine if game currently paused
+const isPaused = () => animationId === null;
+
+// Handle restart button
+
+const restartButton = document.getElementById("restart-btn");
+
+restartButton.addEventListener("click", (e) => {
+  pauseAction();
+  universe.reset_board();
+  playPauseButton.textContent = "⏸";
+  restartAction();
+});
+
+// Handle play/pause button
+
+const playPauseButton = document.getElementById("play-pause-btn");
+
+const play = () => {
+  // restart game, set button text to pause indicator
+  console.log("play()");
+  playPauseButton.textContent = "⏸";
+  restartAction();
+};
+
+const pause = () => {
+  // pause game due to button click, set button text to play indicator
+  console.log("pause()");
+  playPauseButton.textContent = "▶";
+  pauseAction();
+};
+
+const pauseAction = () => {
+  // pause game
+  cancelAnimationFrame(animationId);
+  animationId = null;
+};
+
+const restartAction = () => {
+  renderLoop();
+};
+
+// click event handler
+playPauseButton.addEventListener("click", (event) => {
+  if (isPaused()) {
+    play();
+  } else {
+    pause();
+  }
+});
+
 // start rendering
 drawGrid();
 drawCells();
-requestAnimationFrame(renderLoop);
+play();

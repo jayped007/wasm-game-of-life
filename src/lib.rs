@@ -45,6 +45,15 @@ pub enum Cell {
     Alive = 1
 }
 
+impl Cell {
+    fn toggle(&mut self) {
+        *self = match *self {
+            Cell::Dead => Cell::Alive,
+            Cell::Alive => Cell::Dead,
+        };
+    }
+}
+
 #[wasm_bindgen]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -96,8 +105,33 @@ impl Universe
             }
         }
         neighbors
-    }
-    
+    }   
+
+}
+
+fn generate_cells(width: &u32, height: &u32, _pattern: &InitialPattern) -> Vec<Cell> {
+
+    // expression generating Vec<Cell>
+    let cells = (0..width * height).map(|_i|
+    {
+        //if pattern == InitialPattern::Complex1 {
+        //   // hardcode-pattern, depends on 8x8 definition
+        //   if i % 2 == 0 || i % 7 == 0 {
+        //     Cell::Alive
+        //   } else {
+        //     Cell::Dead
+        //   }
+        // } else { // InitialPattern::Random5050
+            if quad_rand::gen_range(0, 20) == 0 {
+                Cell::Alive
+            } else {
+                Cell::Dead
+            }
+        // }
+
+    }).collect();
+
+    return cells;
 }
 
 // Public methods, exposed to JS
@@ -165,6 +199,12 @@ impl Universe
         self.cells = next; // next state for Universe determined
     }
 
+    // toggle cell (row, column)
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        self.cells[idx].toggle();
+    }
+
     // Constructor, initialize the universe to hard-coded pattern
     pub fn new() -> Universe
     {
@@ -187,26 +227,8 @@ impl Universe
             InitialPattern::Random5050
           };
 
-        // hardcoded pattern, depends on 8x8 definition
-        //   use closure over the 1D array with zero-rel index i
-        let cells = (0..width * height).map(|_i|
-        {
-            //if pattern == InitialPattern::Complex1 {
-            //   if i % 2 == 0 || i % 7 == 0 {
-            //     Cell::Alive
-            //   } else {
-            //     Cell::Dead
-            //   }
-            // } else { // InitialPattern::Random5050
-              if quad_rand::gen_range(0, 20) == 0 {
-                Cell::Alive
-              } else {
-                Cell::Dead
-              }
-            // }
-
-        })
-        .collect();
+        let pattern = InitialPattern::Random5050;
+        let cells = generate_cells(&width, &height, &pattern);
 
         Universe
         {
@@ -215,6 +237,13 @@ impl Universe
             cells,
         }
 
+    }
+
+    pub fn reset_board(&mut self, pattern: InitialPattern) {
+        log!("reset_board() : {:?}", pattern);
+        let width = self.width();
+        let height = self.height();
+        self.cells = generate_cells(&width, &height, &pattern);
     }
 
 }
