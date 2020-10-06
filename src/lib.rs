@@ -296,31 +296,3 @@ impl Universe {
     }
 
 }
-
-
-// implement Display trait for Universe
-//   used by to_string() method used later in render() method
-//   Algo:
-//     Write 'height' lines, each line representing the next row in Universe
-//     for each column in a row show closed square box if live else an open square box.
-//   Could add following pub function to Universe
-//     pub fn render(&self) -> String {
-//       self.to_string()
-//     }
-
-// use std::fmt;
-
-// impl fmt::Display for Universe
-// {
-
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         for line in self.cells.as_slice().chunks(self.width as usize) {
-//             for &cell in line {
-//                 write!(f, "{}", (if cell == Cell::Dead { '◻' } else { '◼' }))?;
-//             }
-//             write!(f, "\n")?;
-//         }
-//         Ok(())
-//     }
-
-// }
