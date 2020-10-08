@@ -19,7 +19,7 @@ pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
-use web_sys;
+use web_sys::console;
 
 // A macro to provide `println!(..)`-style syntax for `console.log` logging.
 //  allows use of log! macro ==> e.g.
@@ -28,7 +28,31 @@ use web_sys;
 //    log!("    it becomes {:?}", next_cell);
 macro_rules! log {
     ( $( $t:tt )* ) => {
-        web_sys::console::log_1(&format!( $( $t )* ).into());
+        console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
+// Timer generic for using web_sys::console::time and timeEnd.
+//   Use new() constructor to call time and
+//    use drop(&mut self) to call timeEnd.
+//   So function wrapped with Timer will automatically be timed.
+//   Then let _timer = Timer::new("Universe::tick");
+//     will cause every call to tick() to be timed and logged on console
+
+pub struct Timer<'a> {
+    name: &'a str,
+}
+
+impl<'a> Timer<'a> {
+    pub fn new(name: &'a str) -> Timer<'a> {
+        console::time_with_label(name);
+        Timer { name }
+    }
+}
+
+impl<'a> Drop for Timer<'a> {
+    fn drop(&mut self) {
+        console::time_end_with_label(self.name);
     }
 }
 
@@ -115,6 +139,8 @@ impl Universe
 
 }
 
+// standalone method, not part of Universe directly
+
 fn generate_cells(width: u32, height: u32, _pattern: InitialPattern) -> Vec<Cell> {
 
     // expression generating Vec<Cell>
@@ -137,7 +163,7 @@ fn generate_cells(width: u32, height: u32, _pattern: InitialPattern) -> Vec<Cell
 
     }).collect();
 
-    return cells;
+    cells
 }
 
 // Public methods, exposed to JS
@@ -177,6 +203,9 @@ impl Universe
     
     pub fn tick(&mut self)
     {
+        let _timer = Timer::new("Universe::tick"); // times the method, timing in browser console
+          // NOTE: timing ended when _timer falls out of scope at end of method
+
         let mut next = self.cells.clone(); // copy of current cells, modify ==> next state
 
         // Determine next state of Universe by applying conways' 4 rules
@@ -237,8 +266,8 @@ impl Universe
         let ms_u64: u64 = now_date.get_milliseconds() as u64;
         quad_rand::srand(ms_u64); // u64
 
-        let width = 64;
-        let height = 64;
+        let width = 128; // was 64
+        let height = 128;
 
         // Randomly decide whether to use Complex1 or Random5050
         let _pattern: InitialPattern =

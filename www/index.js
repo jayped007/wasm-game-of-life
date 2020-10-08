@@ -105,18 +105,39 @@ const drawCells = () => {
 
   ctx.beginPath();
 
+  //    ctx.fillStyle = cells[idx] === Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
+
+  // NOTE: minimize fillStyle applications, handle ALIVE and DEAD separately
+
+  // Alive cells.
+  ctx.fillStyle = ALIVE_COLOR;
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
+      if (cells[idx] === Cell.Alive) {
+        ctx.fillRect(
+          getColStartPos(col),
+          getRowStartPos(row),
+          CELL_SIZE,
+          CELL_SIZE
+        );
+      }
+    }
+  }
 
-      ctx.fillStyle = cells[idx] === Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
-
-      ctx.fillRect(
-        getColStartPos(col),
-        getRowStartPos(row),
-        CELL_SIZE,
-        CELL_SIZE
-      );
+  // Dead cells.
+  ctx.fillStyle = DEAD_COLOR;
+  for (let row = 0; row < height; row++) {
+    for (let col = 0; col < width; col++) {
+      const idx = getIndex(row, col);
+      if (cells[idx] === Cell.Dead) {
+        ctx.fillRect(
+          getColStartPos(col),
+          getRowStartPos(row),
+          CELL_SIZE,
+          CELL_SIZE
+        );
+      }
     }
   }
 
