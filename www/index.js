@@ -189,7 +189,7 @@ canvas.addEventListener("mousedown", (evt) => {
       "canvas mousedown shift-click in (row,col) = (" + row + ", " + col + ")"
     );
     pauseAction(); // no ticks until glider inserted
-    playPauseButton.textContent = "▶";
+    //playPauseButton.textContent = "▶";
     // create glider starting at (row,col)
     universe.set_cell_value(row, col, Cell.Alive); // first row of 3
     universe.set_cell_value(row, col + 1, Cell.Dead);
@@ -203,6 +203,7 @@ canvas.addEventListener("mousedown", (evt) => {
     drawGrid();
     drawCells();
     restartAction();
+    playPauseButton.textContent = "⏸";
   }
 });
 
