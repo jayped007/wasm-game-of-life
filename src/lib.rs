@@ -315,6 +315,7 @@ impl Universe
         log!("reset_board() : {:?}", pattern);
         let width = self.width();
         let height = self.height();
+        self.prevcells = self.cells.clone(); // current grid, needed for correct redraw
         self.cells = generate_cells(width, height, pattern);
     }
 

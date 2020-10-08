@@ -239,6 +239,8 @@ restartButton.addEventListener("click", (e) => {
   pauseAction();
   universe.reset_board();
   playPauseButton.textContent = "⏸";
+  drawGrid(); // must redraw BEFORE render loop restarts
+  drawCells(); // must expose the new grid
   restartAction();
 });
 
