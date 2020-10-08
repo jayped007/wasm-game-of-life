@@ -112,28 +112,24 @@ impl Universe
     }
 
     // Count live neighbors of cell at (row, column)
-    fn live_neighbor_count(&self, row: u32, column: u32) -> u8
+    fn live_neighbor_count(&self, row: u32, col: u32) -> u8
     {
-        let mut neighbors = 0;
-        // Examine cells surrounging (row, column).  This is done by looking
-        // at rows and columns at relative positions -1,0,0 from (row,colum).
-        // NOTE: No special processing for 'last row' or 'last column'?
-        //       modulus wraps the value to the 'other side of the universe'?
-        for delta_row in [self.height -1, 0, 1].iter().cloned()
-        {
-            for delta_col in [self.width -1, 0, 1].iter().cloned()
-            {
-                if delta_row == 0 && delta_col == 0 {
-                    continue; // ignore self
-                }
-                let neighbor_row = (row + delta_row) % self.height;
-                let neighbor_col = (column + delta_col) % self.width;
-                let cell_idx = self.get_index(neighbor_row, neighbor_col);
-                if self.cells[cell_idx] == Cell::Alive {
-                    neighbors += 1;
-                }
-            }
-        }
+        // avoid modulus, division slows us down as seen in profiling
+        let up = if row == 0 { self.height - 1 } else { row - 1 };
+        let down = if row == self.height - 1 { 0 } else { row + 1 };
+        let left = if col == 0 { self.width - 1 } else { col - 1 };
+        let right = if col == self.width - 1 { 0 } else { col + 1 };
+
+        let neighbors =
+          if self.cells[self.get_index(up,left)] == Cell::Alive { 1 } else { 0 }
+        + if self.cells[self.get_index(up,col)] == Cell::Alive { 1 } else { 0 }
+        + if self.cells[self.get_index(up,right)] == Cell::Alive { 1 } else { 0 }
+        + if self.cells[self.get_index(row,left)] == Cell::Alive { 1 } else { 0 }
+        + if self.cells[self.get_index(row,right)] == Cell::Alive { 1 } else { 0 }
+        + if self.cells[self.get_index(down,left)] == Cell::Alive { 1 } else { 0 }
+        + if self.cells[self.get_index(down,col)] == Cell::Alive { 1 } else { 0 }
+        + if self.cells[self.get_index(down,right)] == Cell::Alive { 1 } else { 0 };
+
         neighbors
     }   
 
