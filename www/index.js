@@ -103,6 +103,9 @@ const drawCells = () => {
   const cellsPtr = universe.cells();
   const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
 
+  const prevcellsPtr = universe.prevcells();
+  const prevcells = new Uint8Array(memory.buffer, prevcellsPtr, width * height);
+
   ctx.beginPath();
 
   //    ctx.fillStyle = cells[idx] === Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
@@ -114,7 +117,7 @@ const drawCells = () => {
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = universe.get_cell_index(row, col);
-      if (cells[idx] === Cell.Alive) {
+      if (cells[idx] === Cell.Alive && prevcells[idx] === Cell.Dead) {
         ctx.fillRect(
           getColStartPos(col),
           getRowStartPos(row),
@@ -130,7 +133,7 @@ const drawCells = () => {
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
       const idx = universe.get_cell_index(row, col);
-      if (cells[idx] === Cell.Dead) {
+      if (cells[idx] === Cell.Dead && prevcells[idx] == Cell.Alive) {
         ctx.fillRect(
           getColStartPos(col),
           getRowStartPos(row),

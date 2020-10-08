@@ -99,6 +99,7 @@ pub struct Universe {
     width:  u32,  // width of each row
     height: u32,  // number of rows
     cells:  Vec<Cell>,  // width*height cells, each one byte
+    prevcells: Vec<Cell>, // cells from previous tick
     mousedown: bool // set when shift-click event, so that associated click ignored
 }
 
@@ -162,6 +163,17 @@ fn generate_cells(width: u32, height: u32, _pattern: InitialPattern) -> Vec<Cell
     cells
 }
 
+fn invert_cells(cells: &Vec<Cell>) -> Vec<Cell> {
+    let count = cells.len();
+
+    let inverted_cells = (0..count).map(|i|
+    {
+        if cells[i] == Cell::Alive { Cell::Dead } else { Cell::Alive }
+    }).collect();
+
+    inverted_cells
+}
+
 // Public methods, exposed to JS
 #[wasm_bindgen]
 impl Universe
@@ -201,6 +213,10 @@ impl Universe
     pub fn cells(&self) -> *const Cell {
         self.cells.as_ptr()
     }
+
+    pub fn prevcells(&self) -> *const Cell {
+        self.prevcells.as_ptr()
+    }
     
     pub fn tick(&mut self)
     {
@@ -208,6 +224,7 @@ impl Universe
           // NOTE: timing ended when _timer falls out of scope at end of method
 
         let mut next = self.cells.clone(); // copy of current cells, modify ==> next state
+        self.prevcells = next.clone(); // previous cell values
 
         // Determine next state of Universe by applying conways' 4 rules
         for row in 0..self.height {
@@ -280,6 +297,7 @@ impl Universe
 
         let pattern = InitialPattern::Random5050;
         let cells = generate_cells(width, height, pattern);
+        let prevcells = invert_cells(&cells);
         let mousedown = false;
 
         Universe
@@ -287,6 +305,7 @@ impl Universe
             width,
             height,
             cells,
+            prevcells,
             mousedown
         }
 
