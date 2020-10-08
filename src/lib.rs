@@ -190,6 +190,11 @@ impl Universe
             .map(|_i| Cell::Dead).collect();
     }
 
+    pub fn get_cell_index(&self, row: u32, column: u32) -> u32
+    {
+        row * self.width + column
+    }
+
     // return pointer to 1D array of byte Cell values to JS
     //  NOTE: *const Cell syntax
     //     => pointer to non-mutable array???
