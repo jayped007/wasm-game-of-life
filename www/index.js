@@ -113,7 +113,7 @@ const drawCells = () => {
   ctx.fillStyle = ALIVE_COLOR;
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
+      const idx = universe.get_cell_index(row, col);
       if (cells[idx] === Cell.Alive) {
         ctx.fillRect(
           getColStartPos(col),
@@ -129,7 +129,7 @@ const drawCells = () => {
   ctx.fillStyle = DEAD_COLOR;
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
-      const idx = getIndex(row, col);
+      const idx = universe.get_cell_index(row, col);
       if (cells[idx] === Cell.Dead) {
         ctx.fillRect(
           getColStartPos(col),
